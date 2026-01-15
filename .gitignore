@@ -1,0 +1,7 @@
+.env
+__pycache__/*
+donuts.db
+poetry.lock
+names.json
+.vscode/settings.json
+.pylintrc

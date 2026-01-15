@@ -1,0 +1,18 @@
+[project]
+name = "donutbot"
+version = "1.0.0"
+description = "Simple python bot to keep track of my Discord server's donut competition (don't ask)"
+authors = [
+    {name = "Timst",email = "timst44@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "py-cord (>=2.7.0,<3.0.0)",
+    "dotenv (>=0.9.9,<0.10.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
