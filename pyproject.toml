@@ -1,5 +1,5 @@
 [project]
-name = "DonutBot"
+name = "donutbot"
 version = "1.0.0"
 description = "Simple python bot to keep track of my Discord server's donut competition (don't ask)"
 authors = [
