@@ -1,11 +1,9 @@
 import os
 import random
 import discord
-import dotenv
 from Logic import Logic
 from Data import Data
 
-dotenv.load_dotenv()
 bot = discord.Bot()
 data = Data()
 logic = Logic(data)

@@ -1,5 +1,6 @@
 .env
 __pycache__/*
+donutbot/__pycache__/*
 donuts.db
 poetry.lock
 names.json
