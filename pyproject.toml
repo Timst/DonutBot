@@ -5,7 +5,6 @@ description = "Simple python bot to keep track of my Discord server's donut comp
 authors = [
     {name = "Timst",email = "timst44@gmail.com"}
 ]
-readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "py-cord (>=2.7.0,<3.0.0)",
