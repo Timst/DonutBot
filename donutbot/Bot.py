@@ -26,7 +26,7 @@ async def on_message(message: discord.Message):
 
     if str(message.channel.id) == os.getenv("CHANNEL_ID") and len(message.attachments) > 0:
         for attachment in message.attachments:
-            if attachment.content_type is not None and "image" in attachment.content_type:
+            if attachment.content_type is not None and "image" in attachment.content_type and "!nobot" not in message.content:
                 donuts = openai.analyse_pic(attachment.url)
 
                 if donuts == 0:
@@ -34,11 +34,11 @@ async def on_message(message: discord.Message):
                 else:
                     p = inflect.engine()
 
-                    if "!nobot" not in message.content:
+                    if "!maybebot" in message.content:
+                        await message.channel.send(f"That would have been {p.number_to_words(donuts)} {p.plural_noun("donut", donuts)}.") # type: ignore
+                    else:
                         await message.channel.send(f"{p.number_to_words(donuts).capitalize()} {p.plural_noun("donut", donuts)} for {logic.normalize_name(message.author.name)}!") # type: ignore
                         logic.add(message.author.name, donuts)
-                    else:
-                        await message.channel.send(f"Just so you know, that would have been {p.number_to_words(donuts)} {p.plural_noun("donut", donuts)}.") # type: ignore
 
 @bot.event
 async def on_ready():
