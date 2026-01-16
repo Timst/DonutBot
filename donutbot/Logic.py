@@ -3,6 +3,8 @@ from pathlib import Path
 from Data import Data
 
 class Logic:
+    NAMES_PATH = "/var/data/donuts/names.json"
+
     data: Data
     cache: dict[str, int]
     common_names: dict[str, str]
@@ -13,8 +15,8 @@ class Logic:
 
         self.common_names = {}
 
-        if Path("names.json").exists():
-            with open('names.json', encoding="utf-8") as f:
+        if Path(self.NAMES_PATH).exists():
+            with open(self.NAMES_PATH, encoding="utf-8") as f:
                 self.common_names = json.load(f)
 
     def add(self, username: str, number: int):

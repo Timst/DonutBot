@@ -8,6 +8,7 @@ class Operation(StrEnum):
     DELETE = "delete"
 
 class Data:
+    DB_PATH = "/var/data/donuts/donuts.db"
     connection: sqlite3.Connection
 
     insert_query = """
@@ -25,9 +26,9 @@ class Data:
     """
 
     def __init__(self):
-        first_run = not Path("donuts.db").exists()
+        first_run = not Path(self.DB_PATH).exists()
 
-        self.connection = sqlite3.connect("donuts.db")
+        self.connection = sqlite3.connect(self.DB_PATH)
 
         if first_run:
             cursor = self.connection.cursor()
