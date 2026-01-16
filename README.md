@@ -1,6 +1,6 @@
-A lil Discord bot using [Pycord](https://pycord.dev/), sqlite and the openAI API to keep tabs on our donut championship. Basically the simplest CRUD thing you could imagine.
+A lil Discord bot using [Pycord](https://pycord.dev/), sqlite and the openAI API to keep tabs on our donut championship. ~~Basically the simplest CRUD thing you could imagine.~~ Now with futuristic image processing!
 
-100% homemade garbage, no LLM involved, all the mistakes and suboptimal patterns are mine
+100% homemade garbage, no LLM involved (in the coding, that is), all the mistakes and suboptimal patterns are mine.
 
 
 ## What
