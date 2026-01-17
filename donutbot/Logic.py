@@ -53,6 +53,13 @@ class Logic:
         else:
             return username
 
-    def get_top(self):
+    def get_top(self) -> dict[str, int]:
         print("Requested top")
         return dict(sorted(self.cache.items(), key=lambda item: item[1], reverse=True))
+
+    def get_score(self, username) -> int:
+        print("Requested score")
+        if username in self.cache.keys():
+            return self.cache[username]
+        else:
+            return 0
