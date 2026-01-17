@@ -4,7 +4,7 @@ import random
 import discord
 import inflect
 
-from Logic import Logic
+from Logic import Logic, Source
 from Data import Data
 from OpenAIQuerier import OpenAIQuerier
 
@@ -14,10 +14,14 @@ bot = discord.Bot(intents=intents)
 data = Data()
 logic = Logic(data)
 openai = OpenAIQuerier()
+pluralizer = inflect.engine()
 
-yeepees = ("YUM", "YEEPEE", "HURRAY", "HURRAH", "YUMSIES", "NOM", "YAAAY", "TASTY", "LOVE IT")
+yeepees = ("Yum!!", "Yeepee!!", "Hurray!!", "Hurrah!!", "Yumsies!!", "Nom!!!", "Yaaay!!", "Tasty!", "Love it!!", "Awww yeah!", "Now That's What I Call Donut 1998.")
+sads = ("Oh no :(", "Poor donut, gone too soon :/", ":(", "So sad :(", "RIP bozo!!", "Gone but not forgotten.", "Goodbye donut I will never forget you :(")
 
-token_name = "DONUT_TOKEN"
+env_token_name = "DONUT_TOKEN"
+env_admin_name = "DONUT_ADMIN"
+top_style = "ALT" # Alt is better on mobile but the regular one is prettier on desktop. Pick your poison
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -32,13 +36,13 @@ async def on_message(message: discord.Message):
                 if donuts == 0:
                     await message.channel.send("Doesn't look like a donut to me!")
                 else:
-                    p = inflect.engine()
+
 
                     if "!maybebot" in message.content:
-                        await message.channel.send(f"That would have been {p.number_to_words(donuts)} {p.plural_noun("donut", donuts)}.") # type: ignore
+                        await message.channel.send(f"That would have been {pluralizer.number_to_words(donuts)} {pluralizer.plural_noun("donut", donuts)}.") # type: ignore
                     else:
-                        await message.channel.send(f"{p.number_to_words(donuts).capitalize()} {p.plural_noun("donut", donuts)} for {logic.normalize_name(message.author.name)}!") # type: ignore
-                        logic.add(message.author.name, donuts)
+                        await message.channel.send(f"{pluralizer.number_to_words(donuts).capitalize()} {pluralizer.plural_noun("donut", donuts)} for {logic.normalize_name(message.author.name)}!") # type: ignore
+                        logic.add(message.author.name, donuts, Source.AI)
 
 @bot.event
 async def on_ready():
@@ -47,14 +51,28 @@ async def on_ready():
 @bot.slash_command(name="add", description="Record one or more donuts")
 @discord.option("number", type=discord.SlashCommandOptionType.integer)
 async def add(ctx: discord.ApplicationContext, number: int):
-    logic.add(ctx.user.name, number)
-    await ctx.respond(random.choice(yeepees))
+    logic.add(ctx.user.name, number, Source.MANUAL)
+    await ctx.respond(f"{random.choice(yeepees)} {number} {pluralizer.plural_noun("point", number)} to {logic.normalize_name(ctx.user.name)}") # type: ignore
 
 @bot.slash_command(name="remove", description="Remove one or more donuts, if you (or the bot) messed up")
 @discord.option("number", type=discord.SlashCommandOptionType.integer)
 async def remove(ctx: discord.ApplicationContext, number: int):
-    logic.remove(ctx.user.name, number)
-    await ctx.respond("OH NO")
+    logic.remove(ctx.user.name, number, Source.MANUAL)
+    await ctx.respond(f"{random.choice(sads)} -{number} {pluralizer.plural_noun("point", number)} to {logic.normalize_name(ctx.user.name)}") # type: ignore
+
+@bot.slash_command(name="adjust", description="(Admin only) Add or remove donuts from a person")
+@discord.option("number", type=discord.SlashCommandOptionType.integer)
+async def adjust(ctx: discord.ApplicationContext, number: int, username: str):
+    if ctx.user.name == os.getenv(env_admin_name):
+        if number > 0:
+            logic.add(username, number, Source.ADMIN)
+            await ctx.respond(f"Added {number} {pluralizer.plural_noun("point", number)} to {logic.normalize_name(ctx.user.name)}. Congratulations") # type: ignore
+        else:
+            number = -number
+            logic.remove(username, number, Source.ADMIN)
+            await ctx.respond(f"Removed {number} {pluralizer.plural_noun("point", number)} from {logic.normalize_name(ctx.user.name)}. Suck to suck") # type: ignore
+    else:
+        await ctx.respond("Nuh uh uh ☝️")
 
 @bot.slash_command(name="top", description="Get the current leaderboard")
 async def top(ctx: discord.ApplicationContext):
@@ -62,26 +80,35 @@ async def top(ctx: discord.ApplicationContext):
 
     embed = discord.Embed(
         title="🍩 Donut Championship 2026 🍩",
-        color=discord.Colour.blurple(),
+        color=discord.Colour.gold(),
     )
 
     pos = 1
-    position = ""
-    name = ""
-    score = ""
 
-    for item in results:
-        position += f"{pos}\n"
-        pos += 1
+    if top_style == "ALT":
+        results_str = ""
 
-        name += f"{item[0]}\n"
-        score += f"{item[1]}\n"
+        for name, score in results.items():
+            results_str += f"{"# " if pos == 1 else "## " if pos == 2 else "### " if pos == 3 else "**" if pos == 4 else ""}{pos} – {name} ({score} {pluralizer.plural_noun("pt", score)}){"**" if pos == 4 else ""}\n" # type: ignore
+            pos +=1
 
-    embed.add_field(name="Position", value=position, inline=True)
-    embed.add_field(name="Name", value=name, inline=True)
-    embed.add_field(name="Score", value=score, inline=True)
+        embed.description = results_str
+    else:
+        position = ""
+        name = ""
+        score = ""
+
+        for item in results:
+            position += f"{pos}\n"
+            pos += 1
+
+            name += f"{item[0]}\n"
+            score += f"{item[1]}\n"
+
+        embed.add_field(name="Position", value=position, inline=True)
+        embed.add_field(name="Name", value=name, inline=True)
+        embed.add_field(name="Score", value=score, inline=True)
 
     await ctx.respond("Good job everybody!!", embed=embed)
 
-
-bot.run(os.getenv(token_name))
+bot.run(os.getenv(env_token_name))

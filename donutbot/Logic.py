@@ -1,6 +1,12 @@
+from enum import StrEnum, auto
 import json
 from pathlib import Path
 from Data import Data
+
+class Source(StrEnum):
+    MANUAL = auto()
+    AI = auto()
+    ADMIN = auto()
 
 class Logic:
     NAMES_PATH = "/var/data/donuts/names.json"
@@ -19,8 +25,9 @@ class Logic:
             with open(self.NAMES_PATH, encoding="utf-8") as f:
                 self.common_names = json.load(f)
 
-    def add(self, username: str, number: int):
+    def add(self, username: str, number: int, source: Source):
         name = self.normalize_name(username)
+        number = abs(number)
 
         if name in self.cache:
             self.cache[name] += number
@@ -28,14 +35,17 @@ class Logic:
             self.cache[name] = number
 
         self.data.add(name, number)
+        print(f"Added {number} to {username}. Source: {source}.")
 
-    def remove(self, username, number: int):
+    def remove(self, username, number: int, source: Source):
         name = self.normalize_name(username)
+        number = abs(number)
 
         if name in self.cache:
             self.cache[name] -= number
 
         self.data.remove(name, number)
+        print(f"Removed {number} from {username}. Source: {source}.")
 
     def normalize_name(self, username) -> str:
         if username in self.common_names:
@@ -44,4 +54,5 @@ class Logic:
             return username
 
     def get_top(self):
-        return sorted(self.cache.items(), key=lambda item: item[1], reverse=True)
+        print("Requested top")
+        return dict(sorted(self.cache.items(), key=lambda item: item[1], reverse=True))
