@@ -66,11 +66,11 @@ async def adjust(ctx: discord.ApplicationContext, number: int, username: str):
     if ctx.user.name == os.getenv(env_admin_name):
         if number > 0:
             logic.add(username, number, Source.ADMIN)
-            await ctx.respond(f"Added {number} {pluralizer.plural_noun("point", number)} to {logic.normalize_name(ctx.user.name)}. Congratulations") # type: ignore
+            await ctx.respond(f"Added {number} {pluralizer.plural_noun("point", number)} to {logic.normalize_name(username)}. Congratulations") # type: ignore
         else:
             number = -number
             logic.remove(username, number, Source.ADMIN)
-            await ctx.respond(f"Removed {number} {pluralizer.plural_noun("point", number)} from {logic.normalize_name(ctx.user.name)}. Suck to suck") # type: ignore
+            await ctx.respond(f"Removed {number} {pluralizer.plural_noun("point", number)} from {logic.normalize_name(username)}. Suck to suck") # type: ignore
     else:
         await ctx.respond("Nuh uh uh ☝️")
 
