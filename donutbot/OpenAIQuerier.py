@@ -9,7 +9,10 @@ class OpenAIQuerier:
             input=[{
                 "role": "user",
                 "content": [
-                    {"type": "input_text", "text": "If there are donuts on this picture, return the number of donut(s). If not return 0. Only return a single integer with no additional text."},
+                    {"type": "input_text",
+                     "text": """If there are donuts on this picture, return the number of donut(s).
+If not return 0. Only return a single integer with no additional text.
+In this context, donuts include both ring and filled donuts, along with related pastries like cronuts, fritters, mochi donuts, shakoys, berliners, etc."""},
                     {
                         "type": "input_image",
                         "image_url": url,
