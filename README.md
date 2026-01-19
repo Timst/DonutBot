@@ -21,7 +21,9 @@ In addition, the system uses these files:
 - `/var/data/donuts/donuts_persist.dat`: automatically created file to save a reference to autotop's message
 
 ## How
-Once running, it will watch for the specific channel ID of any server the bot is in (yeah that's dumb. It's meant for one server, I didn't think this through too much). When pictures have been posted, it sends them to OpenAI for donut adjudication, and update the tally accordingly.
+Start the bot with [Poetry](https://python-poetry.org/) by running `poetry run python donutbot/Main.py`.
+
+Once running, it will watch for the specific channel ID of any server your bot is in (if you're running this across different servers, you'll need different instances). When pictures have been posted, it sends them to OpenAI for donut adjudication, and update the tally accordingly.
 
 If you just want to see how a picture would be processed, write `!maybebot` and it will evaluate the image without changing the scores. If you don't want Sam Altman to see your donut pics, write `!nobot` and it won't process them at all.
 
