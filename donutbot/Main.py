@@ -9,7 +9,7 @@ intents.message_content = True
 discord_bot = discord.Bot(intents=intents)
 donut_bot = DonutBot(discord_bot)
 
-env_token_name = "DONUT_TOKEN"
+env_token_name = "BETA_TOKEN"
 
 @discord_bot.event
 async def on_message(message: discord.Message):

@@ -8,6 +8,7 @@ from typing import Optional, cast
 
 import discord
 import inflect
+import pytz
 
 from Logic import Logic, Source
 from Data import Data
@@ -178,6 +179,6 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             embed.add_field(name="Score", value=score, inline=True)
 
         if update_footer:
-            embed.set_footer(text=f"Last updated {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
+            embed.set_footer(text=f"Last updated {datetime.datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d %H:%M:%S")} PST")
 
         return embed
