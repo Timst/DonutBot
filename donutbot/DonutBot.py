@@ -33,7 +33,7 @@ class DonutBot:
     env_admin_name = "DONUT_ADMIN"
     top_style = "ALT" # Alt is better on mobile but the regular one is prettier on desktop. Pick your poison
 
-    PERSISTENT_PATH = "/var/data/donuts/donuts_persist.json"
+    PERSISTENT_PATH = "/var/data/donuts/donuts_persist.dat"
 
 
     def __init__(self, discord_bot: discord.Bot) -> None:
