@@ -152,14 +152,22 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             color=discord.Colour.gold(),
         )
 
-        pos = 1
+        pos = 0
+        last_score = -1
+        tie = 1
 
         if self.top_style == "ALT":
             results_str = ""
 
             for name, score in results.items():
+                if last_score != score:
+                    pos += tie
+                    tie = 1
+                else:
+                    tie += 1
+
                 results_str += f"{"# " if pos == 1 else "## " if pos == 2 else "### " if pos == 3 else "**" if pos == 4 else ""}{pos} – {name} ({score} {self.pluralizer.plural_noun("pt", score)}){"**" if pos == 4 else ""}\n"
-                pos +=1
+                last_score = score
 
             embed.description = results_str
         else:
