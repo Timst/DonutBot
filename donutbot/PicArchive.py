@@ -15,30 +15,33 @@ class PicArchive:
         response = requests.get(url, timeout=10)
 
         if response.status_code == 200:
-            img = Image.open(BytesIO(response.content))
-            is_portrait = img.height > img.width
-            aspect_ratio = img.height / img.width if is_portrait else img.width / img.height
-            small_side = int(config.settings["pics"]["size"])
-            large_side = int(small_side * aspect_ratio)
-            margin = int((large_side - small_side) / 2)
+            try:
+                img = Image.open(BytesIO(response.content))
+                is_portrait = img.height > img.width
+                aspect_ratio = img.height / img.width if is_portrait else img.width / img.height
+                small_side = int(config.settings["pics"]["size"])
+                large_side = int(small_side * aspect_ratio)
+                margin = int((large_side - small_side) / 2)
 
-            if is_portrait:
-                img = img.resize((small_side, large_side), Image.Resampling.LANCZOS)
-                img = img.crop((0, margin, small_side, small_side + margin))
-            else:
-                img = img.resize((533, 400), Image.Resampling.LANCZOS)
-                img = img.crop((margin, 0, small_side + margin, small_side))
+                if is_portrait:
+                    img = img.resize((small_side, large_side), Image.Resampling.LANCZOS)
+                    img = img.crop((0, margin, small_side, small_side + margin))
+                else:
+                    img = img.resize((533, 400), Image.Resampling.LANCZOS)
+                    img = img.crop((margin, 0, small_side + margin, small_side))
 
-            subfolder_path = os.path.join(config.settings["pics"]["root_folder"], sanitize_filepath(username))
-            os.makedirs(subfolder_path, exist_ok=True)
-            filename = os.path.join(subfolder_path, title) + ".webp"
+                subfolder_path = os.path.join(config.settings["pics"]["root_folder"], sanitize_filepath(username))
+                os.makedirs(subfolder_path, exist_ok=True)
+                filename = os.path.join(subfolder_path, title) + ".webp"
 
-            img.save(filename)
-            print(f"Saved pic to {filename}")
+                img.save(filename)
+                print(f"Saved pic to {filename}")
 
-            return filename
+                return filename
+            except Exception as e:
+                print(f"Couldn't process pic {url}: {e}")
         else:
-            print("Couldn't retrieve pic: {url}")
+            print("Couldn't retrieve pic {url}")
             return None
 
     def make_collage(self, username) -> Image.Image | None:
