@@ -27,7 +27,7 @@ class PicArchive:
                     img = img.resize((small_side, large_side), Image.Resampling.LANCZOS)
                     img = img.crop((0, margin, small_side, small_side + margin))
                 else:
-                    img = img.resize((533, 400), Image.Resampling.LANCZOS)
+                    img = img.resize((large_side, small_side), Image.Resampling.LANCZOS)
                     img = img.crop((margin, 0, small_side + margin, small_side))
 
                 subfolder_path = os.path.join(config.settings["pics"]["root_folder"], sanitize_filepath(username))

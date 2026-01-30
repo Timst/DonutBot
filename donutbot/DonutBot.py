@@ -157,7 +157,7 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
         if ctx.user.name == config.settings["discord"]["admin_username"]:
             await ctx.defer()
             if isinstance(ctx.channel, discord.TextChannel):
-                async for message in ctx.channel.history(limit=None):
+                async for message in ctx.channel.history(limit=None, after=datetime(datetime.now().year, 1, 1)):
                     if (
                     "!nobot" not in message.content and
                     "!maybebot" not in message.content and
