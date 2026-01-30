@@ -2,8 +2,8 @@ from enum import StrEnum, auto
 import json
 from pathlib import Path
 
-from Data import Data
 from Config import config
+from Data import Data
 
 class Source(StrEnum):
     MANUAL = auto()

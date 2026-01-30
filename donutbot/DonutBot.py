@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import datetime
-import os
 import random
 import pickle
 from pathlib import Path
@@ -10,10 +9,11 @@ import discord
 import inflect
 import pytz
 
+from Config import config
 from Logic import Logic, Source
 from Data import Data
 from OpenAIQuerier import OpenAIQuerier
-from Config import config
+from PicArchive import PicArchive
 
 @dataclass
 class DonutData:
@@ -23,13 +23,16 @@ class DonutData:
 
 class DonutBot:
     discord_bot: discord.Bot
+    pics: PicArchive
     logic: Logic
     openai: OpenAIQuerier
     pluralizer: inflect.engine
     persistent_data: Optional[DonutData]
 
-    def __init__(self, discord_bot: discord.Bot) -> None:
+    def __init__(self, discord_bot: discord.Bot, pics: PicArchive) -> None:
         self.discord_bot = discord_bot
+        self.pics = pics
+
         self.logic = Logic(Data())
         self.openai = OpenAIQuerier()
         self.pluralizer = inflect.engine()
@@ -48,14 +51,15 @@ class DonutBot:
                     if donuts == 0:
                         await message.channel.send("Doesn't look like a donut to me!")
                     else:
-
-
                         if "!maybebot" in message.content:
                             await message.channel.send(f"That would have been {self.pluralizer.number_to_words(donuts)} {self.pluralizer.plural_noun("donut", donuts)}.")
                         else:
                             await message.channel.send(f"{random.choice(config.settings["messages"]["yeepees"])} {self.pluralizer.number_to_words(donuts).capitalize()} {self.pluralizer.plural_noun("donut", donuts)} for {self.logic.normalize_name(message.author.name)}!") # type: ignore
                             self.logic.add(message.author.name, donuts, Source.AI)
                             await self.update_autotop()
+
+                            if self.pics is not None:
+                                await self.pics.save(message.author.name, attachment.url)
 
     async def add(self, ctx: discord.ApplicationContext, number: int):
         self.logic.add(ctx.user.name, number, Source.MANUAL)
@@ -134,6 +138,20 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             if channel:
                 message = await channel.fetch_message(self.persistent_data.autotop_message_id) # type: ignore
                 await message.edit(embed=self.get_leaderboard_embed(True))
+
+    async def collage(self, ctx: discord.ApplicationContext):
+        if self.pics is None:
+            await ctx.respond("Image saving system not initialized!")
+        else:
+            await ctx.defer()
+            image = self.pics.make_collage(ctx.user.name)
+
+            if image is None:
+                await ctx.respond("Can't make a collage without pics. Go eat a donut.")
+            else:
+                image.save("/tmp/donutcollage.webp")
+                file = discord.File("/tmp/donutcollage.webp")
+                await ctx.respond(file = file)
 
     def get_leaderboard_embed(self, update_footer: bool) -> discord.Embed:
         results = self.logic.get_top()

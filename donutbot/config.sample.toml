@@ -54,3 +54,8 @@ sads = [
 ]
 
 top_title = "🍩 Donut Championship 2026 🍩"
+
+[pics]
+enabled = true
+root_folder = "/var/data/donuts/pics"
+size = 400

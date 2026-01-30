@@ -1,6 +1,6 @@
 [project]
 name = "donutbot"
-version = "1.0.0"
+version = "1.1.0"
 description = "Simple python bot to keep track of my Discord server's donut competition (don't ask)"
 authors = [
     {name = "Timst",email = "timst44@gmail.com"}
@@ -11,7 +11,10 @@ dependencies = [
     "openai (>=2.15.0,<3.0.0)",
     "inflect (>=7.5.0,<8.0.0)",
     "pytz (>=2025.2,<2026.0)",
-    "toml (>=0.10.2,<0.11.0)"
+    "toml (>=0.10.2,<0.11.0)",
+    "pillow (>=12.1.0,<13.0.0)",
+    "requests (>=2.32.5,<3.0.0)",
+    "pathvalidate (>=3.3.1,<4.0.0)"
 ]
 
 

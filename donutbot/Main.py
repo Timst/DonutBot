@@ -1,12 +1,13 @@
 import discord
 
-from DonutBot import DonutBot
 from Config import config
+from PicArchive import PicArchive
+from DonutBot import DonutBot
 
 intents = discord.Intents.default()
 intents.message_content = True
 discord_bot = discord.Bot(intents=intents)
-donut_bot = DonutBot(discord_bot)
+donut_bot = DonutBot(discord_bot, PicArchive() if config.settings["pics"]["enabled"] else None)
 
 @discord_bot.event
 async def on_message(message: discord.Message):
@@ -46,4 +47,9 @@ async def top(ctx: discord.ApplicationContext):
 async def autotop(ctx: discord.ApplicationContext):
     await donut_bot.autotop(ctx)
 
-discord_bot.run(config.settings["discord"]["bot_token"])
+@discord_bot.slash_command(name="collage", description="Look upon yer works")
+async def collage(ctx: discord.ApplicationContext):
+    await donut_bot.collage(ctx)
+
+if __name__ == "__main__":
+    discord_bot.run(config.settings["discord"]["bot_token"])
