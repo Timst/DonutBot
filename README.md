@@ -31,3 +31,5 @@ If you ate a donut but forgot to take a photo (how convenient!), you can use the
 Then to get the tally at any time, use `/top`. To get a tally that automagically updates itself every time the score changes, use `/autotop` instead.
 
 To make yourself sad, use `/stats`.
+
+If the picture system is enabled in the config file, a small (800x800 by default, configurable) version of the pic is saved in `/var/data/donuts/pics`, with a subfolder per user. You can then run `/collage` to get a neat collage of all the donuts you've eaten! Wee!
