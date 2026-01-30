@@ -1,19 +1,19 @@
 from openai import OpenAI
-client = OpenAI()
+
+from Config import config
+
+client = OpenAI(api_key=config.settings["openAI"]["api_key"])
 
 class OpenAIQuerier:
 
     def analyse_pic(self, url: str) -> int:
         response = client.responses.create(
-            model="gpt-4.1-mini",
+            model=config.settings["openAI"]["model"],
             input=[{
                 "role": "user",
                 "content": [
                     {"type": "input_text",
-                     "text": """If there are donuts on this picture, return the number of donut(s).
-If not return 0. Only return a single integer with no additional text.
-In this context, donuts include both ring and filled donuts, along with related fried pastries like cronuts, fritters, mochi donuts, shakoys, berliners, etc.
-Do not count baked pastries like danishes, cinnamon rolls, etc."""},
+                     "text": config.settings["openAI"]["prompt"]},
                     {
                         "type": "input_image",
                         "image_url": url,

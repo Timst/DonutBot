@@ -1,7 +1,9 @@
 from enum import StrEnum, auto
 import json
 from pathlib import Path
+
 from Data import Data
+from Config import config
 
 class Source(StrEnum):
     MANUAL = auto()
@@ -9,8 +11,6 @@ class Source(StrEnum):
     ADMIN = auto()
 
 class Logic:
-    NAMES_PATH = "/var/data/donuts/names.json"
-
     data: Data
     cache: dict[str, int]
     common_names: dict[str, str]
@@ -21,8 +21,8 @@ class Logic:
 
         self.common_names = {}
 
-        if Path(self.NAMES_PATH).exists():
-            with open(self.NAMES_PATH, encoding="utf-8") as f:
+        if Path(config.settings["files"]["names"]).exists():
+            with open(config.settings["files"]["names"], encoding="utf-8") as f:
                 self.common_names = json.load(f)
 
     def add(self, username: str, number: int, source: Source):

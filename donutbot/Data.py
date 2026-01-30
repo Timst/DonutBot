@@ -3,12 +3,13 @@ import datetime
 from enum import StrEnum
 from pathlib import Path
 
+from Config import config
+
 class Operation(StrEnum):
     ADD = "add"
     DELETE = "delete"
 
 class Data:
-    DB_PATH = "/var/data/donuts/donuts.db"
     connection: sqlite3.Connection
 
     insert_query = """
@@ -26,9 +27,9 @@ class Data:
     """
 
     def __init__(self):
-        first_run = not Path(self.DB_PATH).exists()
+        first_run = not Path(config.settings["files"]["database"]).exists()
 
-        self.connection = sqlite3.connect(self.DB_PATH)
+        self.connection = sqlite3.connect(config.settings["files"]["database"])
 
         if first_run:
             cursor = self.connection.cursor()

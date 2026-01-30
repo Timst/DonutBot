@@ -1,0 +1,56 @@
+[files]
+# Used to store donut data (will be created at first run)
+database = "/var/data/donuts/donuts.db"
+
+# Used to save the reference to the autotop message (will be created at first run)
+persistence = "/var/data/donuts/donuts_persist.dat"
+
+# Used to match Discord usernames to real life names (optional, usernames will be used if the file doesn't exist or if there's no match)
+names = "/var/data/donuts/names.json"
+
+[discord]
+admin_username = "[your Discord username here]"
+bot_token = "[your token here]"
+channel_id = "[your channel ID here]"
+
+[openAI]
+api_key = "[your key here]"
+model = "gpt-4.1-mini"
+prompt = """If there are donuts on this picture, return the number of donut(s).
+If not return 0. Only return a single integer with no additional text.
+In this context, donuts include both ring and filled donuts, along with related fried pastries like cronuts, fritters, mochi donuts, shakoys, berliners, etc.
+Do not count baked pastries like danishes, cinnamon rolls, etc."""
+
+
+[ui]
+# If set to true, post the top message embed as plain text (works better on mobile). If false, use columns (prettier on desktop/web, messy on mobile)
+use_compact_top = true
+
+timezone = "America/Los_Angeles"
+
+# Note: messages should have trailing punctuation, since the number of donuts gained/lost is appended after
+[messages]
+yeepees = [
+    "Yum!!",
+    "Yeepee!!",
+    "Hurray!!", "Hurrah!!",
+    "Yumsies!!",
+    "Nom!!!",
+    "Yaaay!!",
+    "Tasty!",
+    "Love it!!",
+    "Awww yeah!",
+    "Now That's What I Call Donut 1998."
+]
+
+sads = [
+    "Oh no :(",
+    "Poor donut, gone too soon :/",
+    ":(",
+    "So sad :(",
+    "RIP bozo!!",
+    "Gone but not forgotten.",
+    "Goodbye donut I will never forget you :("
+]
+
+top_title = "🍩 Donut Championship 2026 🍩"

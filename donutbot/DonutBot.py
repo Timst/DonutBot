@@ -13,6 +13,7 @@ import pytz
 from Logic import Logic, Source
 from Data import Data
 from OpenAIQuerier import OpenAIQuerier
+from Config import config
 
 @dataclass
 class DonutData:
@@ -27,15 +28,6 @@ class DonutBot:
     pluralizer: inflect.engine
     persistent_data: Optional[DonutData]
 
-    yeepees = ("Yum!!", "Yeepee!!", "Hurray!!", "Hurrah!!", "Yumsies!!", "Nom!!!", "Yaaay!!", "Tasty!", "Love it!!", "Awww yeah!", "Now That's What I Call Donut 1998.")
-    sads = ("Oh no :(", "Poor donut, gone too soon :/", ":(", "So sad :(", "RIP bozo!!", "Gone but not forgotten.", "Goodbye donut I will never forget you :(")
-
-    env_admin_name = "DONUT_ADMIN"
-    top_style = "ALT" # Alt is better on mobile but the regular one is prettier on desktop. Pick your poison
-
-    PERSISTENT_PATH = "/var/data/donuts/donuts_persist.dat"
-
-
     def __init__(self, discord_bot: discord.Bot) -> None:
         self.discord_bot = discord_bot
         self.logic = Logic(Data())
@@ -43,13 +35,12 @@ class DonutBot:
         self.pluralizer = inflect.engine()
         self.persistent_data = None
 
-        if Path(self.PERSISTENT_PATH).exists():
-            with open(self.PERSISTENT_PATH, "rb") as f:
+        if Path(config.settings["files"]["persistence"]).exists():
+            with open(config.settings["files"]["persistence"], "rb") as f:
                 self.persistent_data = pickle.load(f)
 
-
     async def on_message(self, message: discord.Message):
-        if str(message.channel.id) == os.getenv("CHANNEL_ID") and len(message.attachments) > 0:
+        if str(message.channel.id) == config.settings["discord"]["channel_id"] and len(message.attachments) > 0:
             for attachment in message.attachments:
                 if attachment.content_type is not None and "image" in attachment.content_type and "!nobot" not in message.content:
                     donuts = self.openai.analyse_pic(attachment.url)
@@ -62,22 +53,22 @@ class DonutBot:
                         if "!maybebot" in message.content:
                             await message.channel.send(f"That would have been {self.pluralizer.number_to_words(donuts)} {self.pluralizer.plural_noun("donut", donuts)}.")
                         else:
-                            await message.channel.send(f"{random.choice(self.yeepees)} {self.pluralizer.number_to_words(donuts).capitalize()} {self.pluralizer.plural_noun("donut", donuts)} for {self.logic.normalize_name(message.author.name)}!") # type: ignore
+                            await message.channel.send(f"{random.choice(config.settings["messages"]["yeepees"])} {self.pluralizer.number_to_words(donuts).capitalize()} {self.pluralizer.plural_noun("donut", donuts)} for {self.logic.normalize_name(message.author.name)}!") # type: ignore
                             self.logic.add(message.author.name, donuts, Source.AI)
                             await self.update_autotop()
 
     async def add(self, ctx: discord.ApplicationContext, number: int):
         self.logic.add(ctx.user.name, number, Source.MANUAL)
-        await ctx.respond(f"{random.choice(self.yeepees)} {number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
+        await ctx.respond(f"{random.choice(config.settings["messages"]["yeepees"])} {number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
         await self.update_autotop()
 
     async def remove(self, ctx: discord.ApplicationContext, number: int):
         self.logic.remove(ctx.user.name, number, Source.MANUAL)
-        await ctx.respond(f"{random.choice(self.sads)} -{number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
+        await ctx.respond(f"{random.choice(config.settings["messages"]["sads"])} -{number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
         await self.update_autotop()
 
     async def adjust(self, ctx: discord.ApplicationContext, number: int, username: str):
-        if ctx.user.name == os.getenv(self.env_admin_name):
+        if ctx.user.name == config.settings["discord"]["admin_username"]:
             if number > 0:
                 self.logic.add(username, number, Source.ADMIN)
                 await ctx.respond(f"Added {number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(username)}. Congratulations")
@@ -131,7 +122,7 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
                 persistent_data = DonutData(message.id, message.channel.id, message.jump_url)
                 self.persistent_data = persistent_data
 
-                with open(self.PERSISTENT_PATH, "wb") as f:
+                with open(config.settings["files"]["persistence"], "wb") as f:
                     pickle.dump(persistent_data, f)
         else:
             await ctx.respond(f"There's already an auto-updating leaderboard, it's here: {self.persistent_data.autotop_message_url}")
@@ -148,7 +139,7 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
         results = self.logic.get_top()
 
         embed = discord.Embed(
-            title="🍩 Donut Championship 2026 🍩",
+            title=config.settings["messages"]["top_title"],
             color=discord.Colour.gold(),
         )
 
@@ -156,7 +147,7 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
         last_score = -1
         tie = 1
 
-        if self.top_style == "ALT":
+        if config.settings["ui"]["use_compact_top"]:
             results_str = ""
 
             for name, score in results.items():
@@ -187,6 +178,6 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             embed.add_field(name="Score", value=score, inline=True)
 
         if update_footer:
-            embed.set_footer(text=f"Last updated {datetime.datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d %H:%M:%S")} PST")
+            embed.set_footer(text=f"Last updated {datetime.datetime.now(pytz.timezone(config.settings["ui"]["timezone"])).strftime("%Y-%m-%d %H:%M:%S")} PST")
 
         return embed
