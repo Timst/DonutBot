@@ -32,4 +32,6 @@ Then to get the tally at any time, use `/top`. To get a tally that automagically
 
 To make yourself sad, use `/stats`.
 
-If the picture system is enabled in the config file, a small (800x800 by default, configurable) version of the pic is saved in `/var/data/donuts/pics`, with a subfolder per user. You can then run `/collage` to get a neat collage of all the donuts you've eaten! Wee!
+If the picture system is enabled in the config file, a small (800x800 by default, configurable) version of valid donut pics is saved in `/var/data/donuts/pics`, with a subfolder per user. You can then run `/collage` to get a neat collage of all the donuts you've eaten! Wee!
+
+If you're running this on a channel that already has pictures, you (the admin) can use `/ingest` to process all the existing pictures. Note that this does respect !nobot and !maybebot directives (these pictures won't get archived), but it does not check pictures against the AI again, so any kind of picture could be saved.

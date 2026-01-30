@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-import datetime
+from datetime import datetime
 import random
 import pickle
 from pathlib import Path
@@ -59,7 +59,7 @@ class DonutBot:
                             await self.update_autotop()
 
                             if self.pics is not None:
-                                await self.pics.save(message.author.name, attachment.url)
+                                await self.pics.save(message.author.name, attachment.url, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
     async def add(self, ctx: discord.ApplicationContext, number: int):
         self.logic.add(ctx.user.name, number, Source.MANUAL)
@@ -92,10 +92,10 @@ class DonutBot:
         total_calories = total_donuts * 250
         percentage = round(donuts/total_donuts * 100)
 
-        now = datetime.datetime.now()
-        start_of_year = datetime.datetime(now.year, 1, 1)
+        now = datetime.now()
+        start_of_year = datetime(now.year, 1, 1)
         start_of_year_delta = now - start_of_year
-        end_of_year = datetime.datetime(now.year, 12, 31)
+        end_of_year = datetime(now.year, 12, 31)
         end_of_year_delta = end_of_year - now
 
         if donuts == 0:
@@ -141,7 +141,7 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
 
     async def collage(self, ctx: discord.ApplicationContext):
         if self.pics is None:
-            await ctx.respond("Image saving system not initialized!")
+            await ctx.respond("Image saving system not enabled!")
         else:
             await ctx.defer()
             image = self.pics.make_collage(ctx.user.name)
@@ -152,6 +152,24 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
                 image.save("/tmp/donutcollage.webp")
                 file = discord.File("/tmp/donutcollage.webp")
                 await ctx.respond(file = file)
+
+    async def ingest(self, ctx: discord.ApplicationContext):
+        if ctx.user.name == config.settings["discord"]["admin_username"]:
+            await ctx.defer()
+            if isinstance(ctx.channel, discord.TextChannel):
+                async for message in ctx.channel.history(limit=None):
+                    if (
+                    "!nobot" not in message.content and
+                    "!maybebot" not in message.content and
+                    len(message.attachments) > 0 and
+                    message.author != self.discord_bot.user
+                    ):
+                        for attachment in message.attachments:
+                            await self.pics.save(message.author.name, attachment.url, message.created_at.strftime("%Y-%m-%d_%H-%M-%S"))
+
+            await ctx.respond("All done :)")
+        else:
+            await ctx.respond("Please, my network budget, it's very sick")
 
     def get_leaderboard_embed(self, update_footer: bool) -> discord.Embed:
         results = self.logic.get_top()
@@ -196,6 +214,6 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             embed.add_field(name="Score", value=score, inline=True)
 
         if update_footer:
-            embed.set_footer(text=f"Last updated {datetime.datetime.now(pytz.timezone(config.settings["ui"]["timezone"])).strftime("%Y-%m-%d %H:%M:%S")} PST")
+            embed.set_footer(text=f"Last updated {datetime.now(pytz.timezone(config.settings["ui"]["timezone"])).strftime("%Y-%m-%d %H:%M:%S")} PST")
 
         return embed

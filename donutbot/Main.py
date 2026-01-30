@@ -51,5 +51,9 @@ async def autotop(ctx: discord.ApplicationContext):
 async def collage(ctx: discord.ApplicationContext):
     await donut_bot.collage(ctx)
 
+@discord_bot.slash_command(name="ingest", description="(Admin only) Perform a one-time ingestion of past pictures")
+async def ingest(ctx: discord.ApplicationContext):
+    await donut_bot.ingest(ctx)
+
 if __name__ == "__main__":
     discord_bot.run(config.settings["discord"]["bot_token"])

@@ -11,7 +11,7 @@ from PIL import Image
 from Config import config
 
 class PicArchive:
-    async def save(self, username: str, url: str) -> str | None:
+    async def save(self, username: str, url: str, title: str) -> str | None:
         response = requests.get(url, timeout=10)
 
         if response.status_code == 200:
@@ -31,7 +31,7 @@ class PicArchive:
 
             subfolder_path = os.path.join(config.settings["pics"]["root_folder"], sanitize_filepath(username))
             os.makedirs(subfolder_path, exist_ok=True)
-            filename = os.path.join(subfolder_path, datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + ".webp"
+            filename = os.path.join(subfolder_path, title) + ".webp"
 
             img.save(filename)
             print(f"Saved pic to {filename}")
