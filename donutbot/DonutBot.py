@@ -150,17 +150,18 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             await ctx.respond("Image saving system not enabled!")
         else:
             await ctx.defer()
+            name = self.logic.normalize_name(username)
             image = self.pics.make_collage(username)
 
             if image is None:
                 if is_self:
                     await ctx.respond("Can't make a collage without pics. Go eat a donut.")
                 else:
-                    await ctx.respond(f"I don't have any pictures for {self.logic.normalize_name(username)} :(")
+                    await ctx.respond(f"I don't have any pictures for {name} :(")
             else:
                 image.save("/tmp/donutcollage.webp")
                 file = discord.File("/tmp/donutcollage.webp")
-                await ctx.respond(file = file)
+                await ctx.respond(f"Here's your body count, {name} :)" if is_self else f"This is what {name} hath wrought", file = file)
 
     async def ingest(self, ctx: discord.ApplicationContext):
         if ctx.user.name == config.settings["discord"]["admin_username"]:
