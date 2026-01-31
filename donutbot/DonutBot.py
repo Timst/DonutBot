@@ -62,14 +62,20 @@ class DonutBot:
                                 await self.pics.save(message.author.name, attachment.url, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
     async def add(self, ctx: discord.ApplicationContext, number: int):
-        self.logic.add(ctx.user.name, number, Source.MANUAL)
-        await ctx.respond(f"{random.choice(config.settings["messages"]["yeepees"])} {number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
-        await self.update_autotop()
+        if abs(number) > 10:
+            await ctx.respond("Come on man")
+        else:
+            self.logic.add(ctx.user.name, number, Source.MANUAL)
+            await ctx.respond(f"{random.choice(config.settings["messages"]["yeepees"])} {number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
+            await self.update_autotop()
 
     async def remove(self, ctx: discord.ApplicationContext, number: int):
-        self.logic.remove(ctx.user.name, number, Source.MANUAL)
-        await ctx.respond(f"{random.choice(config.settings["messages"]["sads"])} -{number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
-        await self.update_autotop()
+        if abs(number) > 10:
+            await ctx.respond("I will not let you destroy all these precious donuts")
+        else:
+            self.logic.remove(ctx.user.name, number, Source.MANUAL)
+            await ctx.respond(f"{random.choice(config.settings["messages"]["sads"])} -{number} {self.pluralizer.plural_noun("point", number)} to {self.logic.normalize_name(ctx.user.name)}")
+            await self.update_autotop()
 
     async def adjust(self, ctx: discord.ApplicationContext, number: int, username: str):
         if ctx.user.name == config.settings["discord"]["admin_username"]:
