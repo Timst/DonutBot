@@ -21,17 +21,14 @@ async def on_ready():
     print(f"{discord_bot.user} is ready, let's get donuting!")
 
 @discord_bot.slash_command(name="add", description="Record one or more donuts")
-@discord.option("number", type=discord.SlashCommandOptionType.integer)
 async def add(ctx: discord.ApplicationContext, number: int):
     await donut_bot.add(ctx, number)
 
 @discord_bot.slash_command(name="remove", description="Remove one or more donuts, if you (or the bot) messed up")
-@discord.option("number", type=discord.SlashCommandOptionType.integer)
 async def remove(ctx: discord.ApplicationContext, number: int):
     await donut_bot.remove(ctx, number)
 
 @discord_bot.slash_command(name="adjust", description="(Admin only) Add or remove donuts from a person")
-@discord.option("number", type=discord.SlashCommandOptionType.integer)
 async def adjust(ctx: discord.ApplicationContext, number: int, username: str):
     await donut_bot.adjust(ctx, number, username)
 
@@ -49,7 +46,11 @@ async def autotop(ctx: discord.ApplicationContext):
 
 @discord_bot.slash_command(name="collage", description="Look upon yer works")
 async def collage(ctx: discord.ApplicationContext):
-    await donut_bot.collage(ctx)
+    await donut_bot.collage(ctx, ctx.user.name, True)
+
+@discord_bot.slash_command(name="audit", description="Show me the receeps")
+async def audit(ctx: discord.ApplicationContext, username: str):
+    await donut_bot.collage(ctx, username, False)
 
 @discord_bot.slash_command(name="ingest", description="(Admin only) Perform a one-time ingestion of past pictures")
 async def ingest(ctx: discord.ApplicationContext):

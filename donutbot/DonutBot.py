@@ -145,15 +145,18 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
                 message = await channel.fetch_message(self.persistent_data.autotop_message_id) # type: ignore
                 await message.edit(embed=self.get_leaderboard_embed(True))
 
-    async def collage(self, ctx: discord.ApplicationContext):
+    async def collage(self, ctx: discord.ApplicationContext, username: str, is_self: bool):
         if self.pics is None:
             await ctx.respond("Image saving system not enabled!")
         else:
             await ctx.defer()
-            image = self.pics.make_collage(ctx.user.name)
+            image = self.pics.make_collage(username)
 
             if image is None:
-                await ctx.respond("Can't make a collage without pics. Go eat a donut.")
+                if is_self:
+                    await ctx.respond("Can't make a collage without pics. Go eat a donut.")
+                else:
+                    await ctx.respond(f"I don't have any pictures for {self.logic.normalize_name(username)} :(")
             else:
                 image.save("/tmp/donutcollage.webp")
                 file = discord.File("/tmp/donutcollage.webp")
