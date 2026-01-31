@@ -1,6 +1,6 @@
 [project]
 name = "donutbot"
-version = "1.1.0"
+version = "1.1.1"
 description = "Simple python bot to keep track of my Discord server's donut competition (don't ask)"
 authors = [
     {name = "Timst",email = "timst44@gmail.com"}
