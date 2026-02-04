@@ -3,11 +3,14 @@ import discord
 from Config import config
 from PicArchive import PicArchive
 from DonutBot import DonutBot
+from Logic import Logic
+from Data import Data
 
 intents = discord.Intents.default()
 intents.message_content = True
 discord_bot = discord.Bot(intents=intents)
-donut_bot = DonutBot(discord_bot, PicArchive() if config.settings["pics"]["enabled"] else None)
+logic = Logic(Data())
+donut_bot = DonutBot(discord_bot, logic, PicArchive(logic) if config.settings["pics"]["enabled"] else None)
 
 @discord_bot.event
 async def on_message(message: discord.Message):
@@ -55,6 +58,10 @@ async def audit(ctx: discord.ApplicationContext, username: str):
 @discord_bot.slash_command(name="ingest", description="(Admin only) Perform a one-time ingestion of past pictures")
 async def ingest(ctx: discord.ApplicationContext):
     await donut_bot.ingest(ctx)
+
+@discord_bot.slash_command(name="board", description="Get a leaderboard with pictures")
+async def board(ctx: discord.ApplicationContext):
+    await donut_bot.board(ctx)
 
 if __name__ == "__main__":
     discord_bot.run(config.settings["discord"]["bot_token"])

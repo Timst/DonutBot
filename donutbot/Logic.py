@@ -37,7 +37,7 @@ class Logic:
         self.data.add(name, number)
         print(f"Added {number} to {username}. Source: {source}.")
 
-    def remove(self, username, number: int, source: Source):
+    def remove(self, username: str, number: int, source: Source):
         name = self.normalize_name(username)
         number = abs(number)
 
@@ -47,17 +47,17 @@ class Logic:
         self.data.remove(name, number)
         print(f"Removed {number} from {username}. Source: {source}.")
 
-    def normalize_name(self, username) -> str:
-        if username in self.common_names:
-            return self.common_names[username]
-        else:
-            return username
+    def normalize_name(self, username: str) -> str:
+        return self.common_names.get(username, username)
+
+    def denormalize_name(self, name: str) -> str:
+        return next((username for username, common_name in self.common_names.items() if common_name == name), name)
 
     def get_top(self) -> dict[str, int]:
         print("Requested top")
         return dict(sorted(self.cache.items(), key=lambda item: item[1], reverse=True))
 
-    def get_score(self, username) -> int:
+    def get_score(self, username: str) -> int:
         print("Requested score")
         if username in self.cache.keys():
             return self.cache[username]

@@ -11,7 +11,6 @@ import pytz
 
 from Config import config
 from Logic import Logic, Source
-from Data import Data
 from OpenAIQuerier import OpenAIQuerier
 from PicArchive import PicArchive
 
@@ -29,11 +28,11 @@ class DonutBot:
     pluralizer: inflect.engine
     persistent_data: Optional[DonutData]
 
-    def __init__(self, discord_bot: discord.Bot, pics: PicArchive) -> None:
+    def __init__(self, discord_bot: discord.Bot, logic: Logic, pics: PicArchive) -> None:
         self.discord_bot = discord_bot
+        self.logic = logic
         self.pics = pics
 
-        self.logic = Logic(Data())
         self.openai = OpenAIQuerier()
         self.pluralizer = inflect.engine()
         self.persistent_data = None
@@ -180,6 +179,16 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             await ctx.respond("All done :)")
         else:
             await ctx.respond("Please, my network budget, it's very sick")
+
+    async def board(self, ctx: discord.ApplicationContext):
+        await ctx.defer()
+        results = self.logic.get_top()
+        image = self.pics.make_board(results)
+
+        if image:
+            image.save("/tmp/donutboard.webp")
+            file = discord.File("/tmp/donutboard.webp")
+            await ctx.respond("Good job everybody I'm proud of you :)", file = file)
 
     def get_leaderboard_embed(self, update_footer: bool) -> discord.Embed:
         results = self.logic.get_top()

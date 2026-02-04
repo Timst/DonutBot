@@ -1,4 +1,3 @@
-from datetime import datetime
 import math
 from io import BytesIO
 import os
@@ -6,11 +5,17 @@ import os
 from pathlib import Path
 from pathvalidate import sanitize_filepath
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont, ImageFile
 
 from Config import config
+from Logic import Logic
 
 class PicArchive:
+    logic: Logic
+
+    def __init__(self, logic: Logic):
+        self.logic = logic
+
     async def save(self, username: str, url: str, title: str) -> str | None:
         response = requests.get(url, timeout=10)
 
@@ -45,39 +50,84 @@ class PicArchive:
             return None
 
     def make_collage(self, username) -> Image.Image | None:
-        directory = os.path.join(config.settings["pics"]["root_folder"], username)
+        pics = self.get_pics_for_user(username)
 
+        if len(pics) == 0:
+            return None
+
+        grid_size = math.ceil(math.sqrt(len(pics)))
+        size = int(config.settings["pics"]["size"])
+        full_image_size = size * grid_size
+        merged_image = Image.new('RGB', (full_image_size, full_image_size), (50,51,56))
+
+        x = 0
+        y = 0
+
+        for pic in pics:
+            try:
+                merged_image.paste(pic, (x * size, y * size))
+
+                x +=1
+
+                if x == grid_size:
+                    x = 0
+                    y += 1
+            except Exception as e:
+                print(f"Couldn't process pic {pic.filename}: {e}")
+
+        last_row_with_content = y if x > 0 else y-1
+
+        merged_image = merged_image.crop((0,0, full_image_size, (last_row_with_content + 1) * size))
+
+        return merged_image
+
+    def make_board(self, scores: dict[str, int]) -> Image.Image | None:
+        height = len(scores.items()) + 1
+        width = max(scores.values()) + 1
+
+        largest_dim = height if height > width else width
+        native_size = int(config.settings["pics"]["size"])
+        size = native_size
+
+        # WebP images can only be up to 16383px a side, and Discord won't embed anything larger than 90250000px in total
+        if largest_dim * native_size > 16383 or (height * native_size * width * native_size) > 90250000:
+            webp_size = math.floor(16383/largest_dim)
+            discord_size = math.floor(9500/math.sqrt(height * width))
+            size = webp_size if webp_size < discord_size else discord_size
+
+            print(f"Resized pics from {native_size}px to {size}px")
+
+        image = Image.new('RGB', (width * size, height * size), (50,51,56))
+        draw = ImageDraw.Draw(image)
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 112)
+
+        margin = int(size/2.1)
+
+        for index in range(0, width - 1):
+            draw.text(xy=((index + 1) * size + margin, margin), text=str(index+1), font=font, fill=(255,255,255))
+
+        name_index = 1
+
+        for name in scores.keys():
+            draw.text(xy=(int(margin/4), name_index * size + margin - int(margin/4)), text=name, font=font, fill=(255,255,255))
+            draw.text(xy=(int(margin/4), name_index * size + margin + int(margin/4)), text=str(scores[name]), font=font, fill=(255,255,255))
+
+            pics = self.get_pics_for_user(self.logic.denormalize_name(name))
+
+            image_index = 1
+            for pic in pics:
+                if native_size != size:
+                    pic = pic.resize((size, size))
+                image.paste(pic, (image_index * size, name_index * size))
+                image_index += 1
+            name_index += 1
+
+        return image
+
+    def get_pics_for_user(self, username: str) -> list[ImageFile.ImageFile]:
+        directory = os.path.join(config.settings["pics"]["root_folder"], username)
         if Path(directory).exists():
             pics = os.listdir(directory)
-
-            if len(pics) == 0:
-                return None
-
-            grid_size = math.ceil(math.sqrt(len(pics)))
-            size = int(config.settings["pics"]["size"])
-            full_image_size = size * grid_size
-            merged_image = Image.new('RGB', (full_image_size, full_image_size), (50,51,56))
-
-            x = 0
-            y = 0
-
-            for pic in pics:
-                try:
-                    img = Image.open(directory + "/" + pic)
-                    merged_image.paste(img, (x * size, y * size))
-
-                    x +=1
-
-                    if x == grid_size:
-                        x = 0
-                        y += 1
-                except Exception as e:
-                    print(f"Couldn't process pic {directory + "/" + pic}: {e}")
-
-            last_row_with_content = y if x > 0 else y-1
-
-            merged_image = merged_image.crop((0,0, full_image_size, (last_row_with_content + 1) * size))
-
-            return merged_image
+            return list(map(lambda file: Image.open(directory + "/" + file), pics))
         else:
-            return None
+            return list()
