@@ -59,3 +59,4 @@ top_title = "🍩 Donut Championship 2026 🍩"
 enabled = true
 root_folder = "/var/data/donuts/pics"
 size = 800
+max_board_size = 40_000_000

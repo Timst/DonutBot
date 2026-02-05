@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from pathvalidate import sanitize_filepath
 import requests
-from PIL import Image, ImageDraw, ImageFont, ImageFile
+from PIL import Image, ImageDraw, ImageFont
 
 from Config import config
 from Logic import Logic
@@ -82,39 +82,52 @@ class PicArchive:
         return merged_image
 
     def make_board(self, scores: dict[str, int]) -> Image.Image | None:
-        height = len(scores.items()) + 1
-        width = max(scores.values()) + 1
+        scores = {self.logic.denormalize_name(key): value for key, value in scores.items()}
+
+        max_pics = max(list(map(self.get_number_of_pics_for_user, scores.keys())))
+
+        height = len(scores.items())
+        width = max_pics + 1
 
         largest_dim = height if height > width else width
         native_size = int(config.settings["pics"]["size"])
         size = native_size
 
-        # WebP images can only be up to 16383px a side, and Discord won't embed anything larger than 90250000px in total
-        if largest_dim * native_size > 16383 or (height * native_size * width * native_size) > 90250000:
+        resolution_limit = int(config.settings["pics"]["max_board_size"]) or None
+        projected_image_resolution = height * native_size * width * native_size
+
+        # WebP images can only be up to 16383px a side, and Discord won't embed anything larger than 90250000px in total.
+        # You can also specify a lower maximum in the config file.
+        if resolution_limit is not None and projected_image_resolution > resolution_limit:
+            size = math.floor(math.sqrt(resolution_limit)/math.sqrt(height * width))
+            print(f"Resized pics from {native_size}px to {size}px (user limitation)")
+
+        projected_image_resolution = height * size * width * size
+
+        if largest_dim * size > 16383 or projected_image_resolution > 90250000:
             webp_size = math.floor(16383/largest_dim)
             discord_size = math.floor(9500/math.sqrt(height * width))
+
             size = webp_size if webp_size < discord_size else discord_size
 
-            print(f"Resized pics from {native_size}px to {size}px")
+            print(f"Resized pics from {native_size}px to {size}px (webp or discord limitation)")
 
         image = Image.new('RGB', (width * size, height * size), (50,51,56))
         draw = ImageDraw.Draw(image)
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 112)
+        name_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", int(size * 0.25))
+        score_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", int(size * 0.25))
 
-        margin = int(size/2.1)
+        margin = int(size/2.25)
 
-        for index in range(0, width - 1):
-            draw.text(xy=((index + 1) * size + margin, margin), text=str(index+1), font=font, fill=(255,255,255))
-
-        name_index = 1
+        name_index = 0
 
         for name in scores.keys():
-            draw.text(xy=(int(margin/4), name_index * size + margin - int(margin/4)), text=name, font=font, fill=(255,255,255))
-            draw.text(xy=(int(margin/4), name_index * size + margin + int(margin/4)), text=str(scores[name]), font=font, fill=(255,255,255))
+            draw.text(xy=(int(margin/4), name_index * size + margin - int(margin/3)), text=self.logic.normalize_name(name), font=name_font, fill=(255,255,255))
+            draw.text(xy=(int(margin/4), name_index * size + margin + int(margin/3)), text=str(scores[name]), font=score_font, fill=(255,255,255))
 
-            pics = self.get_pics_for_user(self.logic.denormalize_name(name))
+            pics = self.get_pics_for_user(name)
 
-            image_index = 1
+            image_index = 2
             for pic in pics:
                 if native_size != size:
                     pic = pic.resize((size, size))
@@ -124,10 +137,16 @@ class PicArchive:
 
         return image
 
-    def get_pics_for_user(self, username: str) -> list[ImageFile.ImageFile]:
+    def get_pics_for_user(self, username: str):
         directory = os.path.join(config.settings["pics"]["root_folder"], username)
         if Path(directory).exists():
             pics = os.listdir(directory)
-            return list(map(lambda file: Image.open(directory + "/" + file), pics))
+            for pic in pics:
+                yield Image.open(directory + "/" + pic)
+
+    def get_number_of_pics_for_user(self, username: str) -> int:
+        directory = os.path.join(config.settings["pics"]["root_folder"], username)
+        if Path(directory).exists():
+            return len(os.listdir(directory))
         else:
-            return list()
+            return 0
