@@ -87,7 +87,7 @@ class PicArchive:
         max_pics = max(list(map(self.get_number_of_pics_for_user, scores.keys())))
 
         height = len(scores.items())
-        width = max_pics + 1
+        width = max_pics + 2
 
         largest_dim = height if height > width else width
         native_size = int(config.settings["pics"]["size"])
@@ -141,6 +141,7 @@ class PicArchive:
         directory = os.path.join(config.settings["pics"]["root_folder"], username)
         if Path(directory).exists():
             pics = os.listdir(directory)
+            pics.sort()
             for pic in pics:
                 yield Image.open(directory + "/" + pic)
 
