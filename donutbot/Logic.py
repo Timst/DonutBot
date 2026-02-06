@@ -55,7 +55,8 @@ class Logic:
 
     def get_top(self) -> dict[str, int]:
         print("Requested top")
-        return dict(sorted(self.cache.items(), key=lambda item: item[1], reverse=True))
+        sorted_results = dict(sorted(self.cache.items(), key=lambda item: item[1], reverse=True))
+        return dict(filter(lambda item: item[1] > 0, sorted_results.items()))
 
     def get_score(self, username: str) -> int:
         print("Requested score")
