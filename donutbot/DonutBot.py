@@ -13,6 +13,7 @@ from Config import config
 from Logic import Logic, Source
 from OpenAIQuerier import OpenAIQuerier
 from PicArchive import PicArchive
+from Chart import Chart
 
 @dataclass
 class DonutData:
@@ -25,13 +26,16 @@ class DonutBot:
     pics: PicArchive
     logic: Logic
     openai: OpenAIQuerier
+    chart_system: Chart
+
     pluralizer: inflect.engine
     persistent_data: Optional[DonutData]
 
-    def __init__(self, discord_bot: discord.Bot, logic: Logic, pics: PicArchive) -> None:
+    def __init__(self, discord_bot: discord.Bot, logic: Logic, pics: PicArchive, chart_system: Chart) -> None:
         self.discord_bot = discord_bot
         self.logic = logic
         self.pics = pics
+        self.chart_system = chart_system
 
         self.openai = OpenAIQuerier()
         self.pluralizer = inflect.engine()
@@ -91,33 +95,18 @@ class DonutBot:
             await ctx.respond("Nuh uh uh ☝️")
 
     async def stats(self, ctx: discord.ApplicationContext):
-        donuts = self.logic.get_score(self.logic.normalize_name(ctx.user.name))
-        all_donuts = self.logic.get_top()
-        total_donuts = sum(all_donuts.values())
-        total_calories = total_donuts * 250
-        percentage = round(donuts/total_donuts * 100)
+        stats = self.logic.get_stats(ctx.user.name)
 
-        now = datetime.now()
-        start_of_year = datetime(now.year, 1, 1)
-        start_of_year_delta = now - start_of_year
-        end_of_year = datetime(now.year, 12, 31)
-        end_of_year_delta = end_of_year - now
-
-        if donuts == 0:
-            await ctx.respond(f"You haven't eaten a single donut yet. But don't worry, there are still {end_of_year_delta.days} days left in the year! You can do it!")
+        if stats.donuts == 0:
+            await ctx.respond(f"You haven't eaten a single donut yet. But don't worry, there are still {stats.days_remaining} days left in the year! You can do it!")
         else:
-            rate = round(donuts / start_of_year_delta.days, 2)
-            projection = int(rate * end_of_year_delta.days)
-            calories = donuts * 250
-            projection_calories = projection * 250
+            await ctx.respond(f"""So far this year you've eaten **{stats.donuts}** {self.pluralizer.plural_noun("donut", stats.donuts)}, at a rate of {stats.rate} donuts per day.
 
-            await ctx.respond(f"""So far this year you've eaten **{donuts}** {self.pluralizer.plural_noun("donut", donuts)}, at a rate of {rate} donuts per day.
+That's a total of {stats.calories} calories!
 
-That's a total of {calories} calories!
+As a whole, the server has eaten **{stats.server_donuts}** {self.pluralizer.plural_noun("donut", stats.server_donuts)}, for a total of {stats.server_calories} calories, and you're responsible for {stats.percentage}% of it.
 
-As a whole, the server has eaten **{total_donuts}** {self.pluralizer.plural_noun("donut", donuts)}, for a total of {total_calories} calories, and you're responsible for {percentage}% of it.
-
-If you continue on this trend, by the end of the year you will have eaten **{projection}** {self.pluralizer.plural_noun("donut", donuts)}. Or {projection_calories} calories. That's probably fine.""")
+If you continue on this trend, by the end of the year you will have eaten **{stats.projection}** {self.pluralizer.plural_noun("donut", stats.projection)}. Or {stats.projection_calories} calories. That's probably fine.""")
 
     async def top(self, ctx: discord.ApplicationContext):
         await ctx.respond("Good job everybody!!", embed=self.get_leaderboard_embed(False))
@@ -189,6 +178,12 @@ If you continue on this trend, by the end of the year you will have eaten **{pro
             image.save("/tmp/donutboard.webp")
             file = discord.File("/tmp/donutboard.webp")
             await ctx.respond("Good job everybody I'm proud of you :)", file = file)
+
+    async def chart(self, ctx: discord.ApplicationContext, project: bool):
+        self.chart_system.get_chart(project)
+        file = discord.File(self.chart_system.CHART_FILE)
+        await ctx.respond("Look at them go", file = file)
+
 
     def get_leaderboard_embed(self, update_footer: bool) -> discord.Embed:
         results = self.logic.get_top()

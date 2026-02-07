@@ -1,6 +1,6 @@
 [project]
 name = "donutbot"
-version = "1.1.2"
+version = "1.2.0"
 description = "Simple python bot to keep track of my Discord server's donut competition (don't ask)"
 authors = [
     {name = "Timst",email = "timst44@gmail.com"}
@@ -14,7 +14,10 @@ dependencies = [
     "toml (>=0.10.2,<0.11.0)",
     "pillow (>=12.1.0,<13.0.0)",
     "requests (>=2.32.5,<3.0.0)",
-    "pathvalidate (>=3.3.1,<4.0.0)"
+    "pathvalidate (>=3.3.1,<4.0.0)",
+    "seaborn (>=0.13.2,<0.14.0)",
+    "matplotlib (>=3.10.8,<4.0.0)",
+    "scipy (>=1.17.0,<2.0.0)",
 ]
 
 

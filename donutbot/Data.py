@@ -2,6 +2,7 @@ import sqlite3
 import datetime
 from enum import StrEnum
 from pathlib import Path
+import pandas as pd
 
 from Config import config
 
@@ -44,7 +45,7 @@ class Data:
 
     def insert_record(self, username: str, number: int, operation: Operation):
         cursor = self.connection.cursor()
-        cursor.execute(self.insert_query, (username, number, datetime.datetime.now(), operation))
+        cursor.execute(self.insert_query, (username, number, datetime.datetime.now().strftime('%F %T.%f')[:-3], operation))
         self.connection.commit()
 
     def clear(self):
@@ -69,3 +70,6 @@ class Data:
                 result[username] = (int(number) * 1 if operation == Operation.ADD else -1)
 
         return result
+
+    def get_dataframe(self) -> pd.DataFrame:
+        return pd.read_sql_query("SELECT * from Records ORDER BY time ASC", self.connection)

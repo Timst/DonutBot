@@ -1,6 +1,9 @@
 from enum import StrEnum, auto
 import json
 from pathlib import Path
+from datetime import datetime
+
+from attr import dataclass
 
 from Config import config
 from Data import Data
@@ -9,6 +12,19 @@ class Source(StrEnum):
     MANUAL = auto()
     AI = auto()
     ADMIN = auto()
+
+@dataclass
+class Stats:
+    donuts: int
+    percentage: int
+    rate: float
+    projection: int
+    calories: int
+    server_donuts: int
+    server_calories: int
+    projection_calories: int
+    days_remaining: int
+
 
 class Logic:
     data: Data
@@ -64,3 +80,25 @@ class Logic:
             return self.cache[username]
         else:
             return 0
+
+    def get_stats_by_display_name(self, display_name: str) -> Stats:
+        return self.get_stats(self.denormalize_name(display_name))
+
+    def get_stats(self, username: str) -> Stats:
+        donuts = self.get_score(self.normalize_name(username))
+        all_donuts = self.get_top()
+        total_donuts = sum(all_donuts.values())
+        total_calories = total_donuts * 250
+        percentage = round(donuts/total_donuts * 100)
+
+        now = datetime.now()
+        start_of_year = datetime(now.year, 1, 1)
+        start_of_year_delta = now - start_of_year
+        end_of_year = datetime(now.year, 12, 31)
+        end_of_year_delta = end_of_year - now
+        rate = round(donuts / start_of_year_delta.days, 2)
+        projection = int(rate * end_of_year_delta.days) + donuts
+        calories = donuts * 250
+        projection_calories = projection * 250
+
+        return Stats(donuts, percentage, rate, projection, calories, total_calories, total_donuts, projection_calories, end_of_year_delta.days)

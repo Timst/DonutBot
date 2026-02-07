@@ -2,15 +2,18 @@ import discord
 
 from Config import config
 from PicArchive import PicArchive
-from DonutBot import DonutBot
 from Logic import Logic
 from Data import Data
+from Chart import Chart
+from DonutBot import DonutBot
 
 intents = discord.Intents.default()
 intents.message_content = True
 discord_bot = discord.Bot(intents=intents)
-logic = Logic(Data())
-donut_bot = DonutBot(discord_bot, logic, PicArchive(logic) if config.settings["pics"]["enabled"] else None)
+data = Data()
+logic = Logic(data)
+chart_system = Chart(data, logic)
+donut_bot = DonutBot(discord_bot, logic, PicArchive(logic) if config.settings["pics"]["enabled"] else None, chart_system)
 
 @discord_bot.event
 async def on_message(message: discord.Message):
@@ -62,6 +65,10 @@ async def ingest(ctx: discord.ApplicationContext):
 @discord_bot.slash_command(name="board", description="Get a leaderboard with pictures")
 async def board(ctx: discord.ApplicationContext):
     await donut_bot.board(ctx)
+
+@discord_bot.slash_command(name="chart", description="Get a chart of scores so far, with an optional trendline")
+async def chart(ctx: discord.ApplicationContext, project: bool):
+    await donut_bot.chart(ctx, project)
 
 if __name__ == "__main__":
     discord_bot.run(config.settings["discord"]["bot_token"])

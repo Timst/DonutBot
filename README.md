@@ -27,7 +27,7 @@ If you just want to see how a picture would be processed, write `!maybebot` and 
 
 If you ate a donut but forgot to take a photo (how convenient!), you can use the slash command `/add [number]` to add an arbitrary number of donuts to your score. Inversely if the bot messed up (or you did), you can use `/remove [number]`. If you're the admin (see config above), you can also use `/adjust [number] [username]`, where number can be negative or positive, to add/remove points from a user (use their discord account name, not display name).
 
-Then to get the tally at any time, use `/top`. To get a tally that automagically updates itself every time the score changes, use `/autotop` instead.
+Then to get the tally at any time, use `/top`. To get a tally that automagically updates itself every time the score changes, use `/autotop` instead. You can also show that as a time chart with `/chart`. That one takes a project parameter: use `/chart False` to get the scores so far, and `/chart True` to get a trendline to the end of the year.
 
 To make yourself sad, use `/stats`.
 
