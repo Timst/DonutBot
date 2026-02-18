@@ -101,4 +101,4 @@ class Logic:
         calories = donuts * 250
         projection_calories = projection * 250
 
-        return Stats(donuts, percentage, rate, projection, calories, total_calories, total_donuts, projection_calories, end_of_year_delta.days)
+        return Stats(donuts, percentage, rate, projection, calories, total_donuts, total_calories, projection_calories, end_of_year_delta.days)
