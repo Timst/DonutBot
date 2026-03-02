@@ -20,17 +20,12 @@ class Chart:
         self.logic = logic
 
     def get_score_over_time(self) -> pd.DataFrame:
-        df = self.data.get_dataframe()
+        df = self.data.get_cleaned_dataframe()
         df['time'] = pd.to_datetime(df['time'], format="mixed")
-
-        df['point_value'] = df.apply(
-            lambda x: x['number'] if x['operation'] == 'add' else -x['number'],
-            axis=1
-        )
 
         df = df.sort_values(by=['username', 'time'])
 
-        df['cumulative_score'] = df.groupby('username')['point_value'].cumsum()
+        df['cumulative_score'] = df.groupby('username')['number'].cumsum()
 
         df['time_numeric'] = df['time'].map(pd.Timestamp.toordinal)
 
