@@ -11,7 +11,7 @@ class Operation(StrEnum):
     DELETE = "delete"
 
 def _get_query(query_name):
-    with open('queries/{}.sql'.format(query_name), 'r', encoding='utf-8') as file:
+    with open('donutbot/queries/{}.sql'.format(query_name), 'r', encoding='utf-8') as file:
         query_string = file.read()
     return query_string
 
@@ -95,10 +95,12 @@ class Data:
         return pd.read_sql_query("SELECT * from donut_rates", self.connection)
     
     def clean_records(self):
+        print('Cleaning records...')
         df_clean = pd.read_sql_query(_get_query('cleaned_records'), self.connection)
         df_clean.to_sql('cleaned_records', self.connection, if_exists='replace', index=False)
     
     def estimate_rates(self):
+        print('Estimating rates...')
         df_rates = pd.read_sql_query(_get_query('donut_rates'), self.connection)
         df_rates.to_sql('donut_rates', self.connection, if_exists='replace', index=False)
     
@@ -106,7 +108,7 @@ class Data:
         try:
             staleness_query = '''
                 select 
-                    (select max(refresh_time) from {}) < (select max(time) from records)
+                    (select max(refresh_time) from {}) < (select datetime(max(time), 'utc') from Records)
                         OR 
                     (select julianday(max(refresh_time)) from {}) < (julianday('now') - 1)
             '''.format(table_name, table_name)

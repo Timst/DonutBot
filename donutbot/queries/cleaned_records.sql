@@ -32,7 +32,6 @@ left join adds
     from corrections_calculation
     where correction != 0
     group by username, id, number
-    having number + sum(correction) >= 0
 )
 
 , corrections_overflow as (
