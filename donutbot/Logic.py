@@ -92,11 +92,10 @@ class Logic:
     def get_estimated_rate(self, username: str) -> float:
         print("Requested rate estimate")
         if self.refresh_rates:
-            print("Refreshing rates...?")
+            print("Refreshing rates...")
             self.rates_cache = self.data.summarize_rates()
             self.refresh_rates = False
         if username in self.rates_cache.keys():
-            print('Summary rate: {}'.format(self.rates_cache[username]))
             return self.rates_cache[username]
         else:
             return 0

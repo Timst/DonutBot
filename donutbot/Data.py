@@ -88,22 +88,9 @@ class Data:
         return pd.read_sql_query("SELECT * from cleaned_records ORDER BY time ASC", self.connection)
     
     def get_rates_dataframe(self) -> pd.DataFrame:
-        # print("Getting rates dataframe")
-
-        print("Max refresh_time on rates")
-        print(pd.read_sql_query("SELECT max(refresh_time) from donut_rates", self.connection).iloc[0,0])
-
-        print("Max refresh_time on cleaned records")
-        print(pd.read_sql_query("SELECT max(refresh_time) from cleaned_records", self.connection).iloc[0,0])
-
-        print("Max time in Records")
-        print(pd.read_sql_query("SELECT datetime(max(time), 'utc') from Records", self.connection).iloc[0,0])
-        
         if self.needs_refresh('cleaned_records'):
-            print('Records need recleaning')
             self.clean_records()
         if self.needs_refresh('donut_rates'):
-            print('Rates need refresh')
             self.estimate_rates()
         return pd.read_sql_query("SELECT * from donut_rates", self.connection)
     
@@ -111,8 +98,6 @@ class Data:
         print('Cleaning records...')
         df_clean = pd.read_sql_query(_get_query('cleaned_records'), self.connection)
         df_clean.to_sql('cleaned_records', self.connection, if_exists='replace', index=False)
-        print(pd.read_sql_query("SELECT * from Records ORDER BY time DESC", self.connection).iloc[:15,:])
-        print(pd.read_sql_query("SELECT * from cleaned_records ORDER BY time DESC", self.connection).iloc[:10,:])
     
     def estimate_rates(self):
         print('Estimating rates...')
