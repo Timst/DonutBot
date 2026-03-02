@@ -90,10 +90,13 @@ class Logic:
             return 0
         
     def get_estimated_rate(self, username: str) -> float:
+        print("Requested rate estimate")
         if self.refresh_rates:
+            print("Refreshing rates...?")
             self.rates_cache = self.data.summarize_rates()
             self.refresh_rates = False
         if username in self.rates_cache.keys():
+            print('Summary rate: {}'.format(self.rates_cache[username]))
             return self.rates_cache[username]
         else:
             return 0
@@ -113,8 +116,10 @@ class Logic:
         start_of_year_delta = now - start_of_year
         end_of_year = datetime(now.year, 12, 31)
         end_of_year_delta = end_of_year - now
-        # rate = round(donuts / start_of_year_delta.days, 2)
+        rate_old = round(donuts / start_of_year_delta.days, 2)
+        print('Old rate: {}'.format(rate_old))
         rate = self.get_estimated_rate(self.normalize_name(username))
+        print('Rate: {}'.format(rate))
         projection = int(rate * end_of_year_delta.days) + donuts
         calories = donuts * 250
         projection_calories = projection * 250

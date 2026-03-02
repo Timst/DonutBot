@@ -39,7 +39,6 @@ with rate_14d as (
 , modeled_rates as (
     select username
          , all_time.total_number as current_total
-         , 
          , case when rate_14d.entry_count > 1 and rate_14d.total_number > 4 then rate_14d.days_sampled
                 when rate_28d.entry_count > 1 and rate_28d.total_number > 4 then rate_28d.days_sampled
                 else all_time.days_sampled
