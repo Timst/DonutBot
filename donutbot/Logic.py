@@ -29,11 +29,17 @@ class Stats:
 class Logic:
     data: Data
     cache: dict[str, int]
+    rates_cache: dict[str, float]
+    refresh_rates: bool
     common_names: dict[str, str]
 
     def __init__(self, data: Data):
         self.data = data
         self.cache = data.summarize()
+        self.data.clean_records()
+        self.data.estimate_rates()
+        self.rates_cache = data.summarize_rates()
+        self.refresh_rates = False
 
         self.common_names = {}
 
@@ -51,6 +57,7 @@ class Logic:
             self.cache[name] = number
 
         self.data.add(name, number)
+        self.refresh_rates = True
         print(f"Added {number} to {username}. Source: {source}.")
 
     def remove(self, username: str, number: int, source: Source):
@@ -61,6 +68,7 @@ class Logic:
             self.cache[name] -= number
 
         self.data.remove(name, number)
+        self.refresh_rates = True
         print(f"Removed {number} from {username}. Source: {source}.")
 
     def normalize_name(self, username: str) -> str:
@@ -80,6 +88,15 @@ class Logic:
             return self.cache[username]
         else:
             return 0
+        
+    def get_estimated_rate(self, username: str) -> float:
+        if self.refresh_rates:
+            self.rates_cache = self.data.summarize_rates()
+            self.refresh_rates = False
+        if username in self.rates_cache.keys():
+            return self.rates_cache[username]
+        else:
+            return 0
 
     def get_stats_by_display_name(self, display_name: str) -> Stats:
         return self.get_stats(self.denormalize_name(display_name))
@@ -96,7 +113,8 @@ class Logic:
         start_of_year_delta = now - start_of_year
         end_of_year = datetime(now.year, 12, 31)
         end_of_year_delta = end_of_year - now
-        rate = round(donuts / start_of_year_delta.days, 2)
+        # rate = round(donuts / start_of_year_delta.days, 2)
+        rate = self.get_estimated_rate(self.normalize_name(username))
         projection = int(rate * end_of_year_delta.days) + donuts
         calories = donuts * 250
         projection_calories = projection * 250
