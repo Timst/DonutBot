@@ -19,7 +19,9 @@ In addition, the system uses these files. Their paths can be configured in the c
 - `/var/data/donuts/donuts_persist.dat`: automatically created file to save a reference to `/autotop`'s message
 
 ## How
-Start the bot with [Poetry](https://python-poetry.org/) by running `poetry run python donutbot/Main.py`.
+Install everything with [Poetry](https://python-poetry.org/) by running `poetry install` in the main directory.
+
+Start the bot by running `poetry run python donutbot/Main.py`.
 
 Once running, it will watch for the specific channel ID of any server your bot is in (if you're running this across different servers, you'll need different instances). When pictures have been posted, it sends them to OpenAI for donut adjudication, and update the tally accordingly.
 
