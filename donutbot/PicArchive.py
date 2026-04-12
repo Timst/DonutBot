@@ -50,7 +50,7 @@ class PicArchive:
             return None
 
     def make_collage(self, username) -> Image.Image | None:
-        pics = self.get_pics_for_user(username)
+        pics = list(self.get_pics_for_user(username))
 
         if len(pics) == 0:
             return None
