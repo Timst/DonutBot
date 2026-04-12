@@ -2,7 +2,7 @@ from openai import OpenAI
 
 from Config import config
 
-client = OpenAI(api_key=config.settings["openAI"]["api_key"])
+client = OpenAI(api_key=config.settings["openAI"]["api_key"], max_retries=3, timeout=60.0)
 
 class OpenAIQuerier:
 
