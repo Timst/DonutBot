@@ -51,12 +51,12 @@ class PicArchive:
             return None
 
     def make_collage(self, username) -> Image.Image | None:
-        pics = list(self.get_pics_for_user(username))
+        number = self.get_number_of_pics_for_user(username)
 
-        if len(pics) == 0:
+        if number == 0:
             return None
 
-        grid_size = math.ceil(math.sqrt(len(pics)))
+        grid_size = math.ceil(math.sqrt(number))
         size = self.get_pic_resolution(grid_size, grid_size)
         full_image_size = size * grid_size
         merged_image = Image.new('RGB', (full_image_size, full_image_size), (50,51,56))
@@ -65,7 +65,7 @@ class PicArchive:
         x = 0
         y = 0
 
-        for pic in pics:
+        for pic in self.get_pics_for_user(username):
             if native_size != size:
                 pic = pic.resize((size, size))
 
@@ -146,11 +146,13 @@ class PicArchive:
         resolution_limit = int(config.settings["pics"]["max_board_size"]) or None
         projected_image_resolution = height * native_size * width * native_size
 
+        print(f"Projected image resolution is {projected_image_resolution}px ({height}x{width} grid with {native_size}px pics)")
+
         # WebP images can only be up to 16383px a side, and Discord won't embed anything larger than 90250000px in total.
         # You can also specify a lower maximum in the config file.
         if resolution_limit is not None and projected_image_resolution > resolution_limit:
             size = math.floor(math.sqrt(resolution_limit)/math.sqrt(height * width))
-            print(f"Resized pics from {native_size}px to {size}px (user limitation)")
+            print(f"Resized pics from {native_size}px to {size}px (user limitation), as the projected image resolution of {projected_image_resolution}px exceeds the configured limit of {resolution_limit}px")
 
         projected_image_resolution = height * size * width * size
 
@@ -160,6 +162,8 @@ class PicArchive:
 
             size = webp_size if webp_size < discord_size else discord_size
 
-            print(f"Resized pics from {native_size}px to {size}px (webp or discord limitation)")
+            print(f"Resized pics from {native_size}px to {size}px (webp or discord limitation), as the projected image resolution of {projected_image_resolution}px exceeds the maximum embeddable resolution of 90250000px, or the largest dimension of the image exceeds the webp limit of 16383px")
 
+
+        print(f"Final pic resolution is {size}px, resulting in a projected image resolution of {height * size * width * size}px")
         return size

@@ -75,41 +75,41 @@ class Data:
                 result[username] = (int(number) * 1 if operation == Operation.ADD else -1)
 
         return result
-    
+
     def summarize_rates(self) -> dict[str, float]:
         return self.get_rates_dataframe()[['username','donuts_per_day']].set_index('username').to_dict()['donuts_per_day']
 
     def get_dataframe(self) -> pd.DataFrame:
         return pd.read_sql_query("SELECT * from Records ORDER BY time ASC", self.connection)
-    
+
     def get_cleaned_dataframe(self) -> pd.DataFrame:
         if self.needs_refresh('cleaned_records'):
             self.clean_records()
         return pd.read_sql_query("SELECT * from cleaned_records ORDER BY time ASC", self.connection)
-    
+
     def get_rates_dataframe(self) -> pd.DataFrame:
         if self.needs_refresh('cleaned_records'):
             self.clean_records()
         if self.needs_refresh('donut_rates'):
             self.estimate_rates()
         return pd.read_sql_query("SELECT * from donut_rates", self.connection)
-    
+
     def clean_records(self):
         print('Cleaning records...')
         df_clean = pd.read_sql_query(_get_query('cleaned_records'), self.connection)
         df_clean.to_sql('cleaned_records', self.connection, if_exists='replace', index=False)
-    
+
     def estimate_rates(self):
         print('Estimating rates...')
         df_rates = pd.read_sql_query(_get_query('donut_rates'), self.connection)
         df_rates.to_sql('donut_rates', self.connection, if_exists='replace', index=False)
-    
+
     def needs_refresh(self, table_name: str) -> bool:
         try:
             staleness_query = '''
-                select 
+                select
                     (select max(refresh_time) from {}) < (select datetime(max(time), 'utc') from Records)
-                        OR 
+                        OR
                     (select julianday(max(refresh_time)) from {}) < (julianday('now') - 1)
             '''.format(table_name, table_name)
         except:
